@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<title>Simon</title>
+
+
+<style>
+
+.infoDiv {
+    display: inline-block;
+    position: relative;
+    top:50px;
+    width: 300%;
+    margin:0 20px 0 30px;
+    height:50px;
+    background-color: darkgray;
+    border-radius: 5px;
+    vertical-align:middle;
+}
+
+.sidediv {
+    position: relative;
+    text-align: center;
+    top: 30px;
+    left: 10px;
+    background-color: rgb(70, 70, 70);
+    width:200px;
+    height: 250px;
+    border-radius: 5px;
+    border-color: rgb(70, 70, 70);
+    flex: none;
+}
+
+button {
+    margin-left: 10%;
+    margin-right: 10%;
+    height:60px;
+    font-size:15px;
+    margin-top: 15px;
+    display: flex;
+}
+
+.Simon-Buttons {
+    stroke-width: 0px;
+    stroke: black;
+    stroke-linejoin: round;
+    transition: 0.4s ease-in-out;
+}
+.Simon-Buttons:hover{
+    cursor: pointer;
+}
+
+.Simon-Buttons-Clicked {
+    stroke-width: 6px;
+    stroke:rgba(255, 255, 255, 0.658);
+    filter:contrast(60%) brightness(200%);
+}
+
+.Simon-Center {
+    fill:white;
+    stroke-width: 0px;
+    stroke: black;
+    transition: 2s ease-in-out;
+}
+
+@keyframes mistakeAnimation {
+
+    30% {
+        fill:rgb(119, 11, 151);
+        stroke-width: 5px;
+        stroke:rgb(119, 11, 151);
+    }
+
+    70% {
+        fill:rgb(119, 11, 151);
+        stroke-width: 5px;
+        stroke:rgb(119, 11, 151);
+    }
+
+    to {
+        fill:white;
+        stroke-width: 0px;
+        stroke: black;
+    }
+}
+
+
+
+</style>
+</head>
+<body style="background-color: black;text-align: center;">
+
+  <div style="display: flex;flex-wrap: nowrap;text-align: center;">
+    <div class="sidediv">
+      <button id="newGameButton" class="btn btn-primary"><div>Start New Game</div></button></br>
+      <button id="addMoveButton" class="btn btn-secondary">Add New Move</button></br>
+      <button id="showSeqButton" class="btn btn-info">Show Sequence</button>
+    </div>
+
+    <div class="infoDiv" style="transition: 0.5s ease-in-out;">
+      <p id="infoText" style="display: block;height: 20px;"></p>
+      <p id="statText" style="position:relative;display: block;height: 33px; width: 100px;background-color: rgb(168, 205, 207);border:white 2px solid;border-radius: 10px;;margin-top: 40px;"></p>
+      <svg id="simonGame" width="460" height="460" style="position: relative;">
+            <path id="SimonButton1" class="Simon-Buttons" d="M100 400 L200 300 A 141.42 141.42 0 0 1 200 200 L100 100 A 454.26 424.26 0 0 0 100 400 Z"  fill="red" />
+           <path id="SimonButton2" class="Simon-Buttons" d="M110 410 L210 310 A 141.42 141.42 0 0 0 310 310 L410 410 A 454.26 424.26 0 0 1 110 410 Z"  fill="blue" />
+            <path id="SimonButton3" class="Simon-Buttons" d="M420 400 L320 300 A 141.42 141.42 0 0 0 320 200 L420 100 A 454.26 424.26 0 0 1 420 400 Z"  fill="green" />
+            <path id="SimonButton4" class="Simon-Buttons" d="M410 90 L310 190 A 141.42 141.42 0 0 0 210 190 L110 90 A 454.26 424.26 0 0 1 410 90 Z"  fill="yellow" />
+            <path id="SimonCenter" class="Simon-Center" d="M210 297.07 A 141.42 141.42 0 0 0 310 297.07 A 141.42 141.42 0 0 0 310 203.03 A 141.42 141.42 0 0 0 210 203.03 A 141.42 141.42 0 0 0 210 297.07" />
+            <text x="220" y="220"  fill="white" width="100px">
+                <tspan x="225" y="240">You Made</tspan><tspan x="224" y="265">A Mistake!</tspan> </text>
+        </svg>
+
+    </div>
+  </div>
+
+<script>
+
+    var seq;
+    var repeatedseq;
+    var interupted;
+    var mistakeCount;
+    var showingSeq;
+    var waitingShow;
+
+    document.querySelectorAll('.Simon-Buttons').forEach(button => {
+        button.addEventListener("click" , (ele) => {
+            writeInfo("");
+            interupted = 1;
+            if (waitingShow) {
+                writeInfo("Wait for the sequence to start");
+                return;
+            }
+            let tar = ele.target;
+            tar.classList.add("Simon-Buttons-Clicked");
+            setTimeout(() => {
+                tar.classList.remove("Simon-Buttons-Clicked");
+            },600);
+            
+            let num = parseInt(tar.id.substring(tar.id.length-1,tar.id.length));
+            repeatedseq.push(num);
+
+            let mistake=0;
+            for (let i = 0; i < repeatedseq.length&&!mistake; i++)
+                if (repeatedseq[i]!=seq[i]) {
+                    mistake=1;
+                    console.log("You made a mistake");
+                }
+            
+            if (mistake) {
+                mistakeCount+=1;
+                if (mistakeCount<3) {
+                    document.getElementById('SimonCenter').style.animation = "mistakeAnimation 2s linear 1 normal both";
+                    setTimeout(() => {document.getElementById('SimonCenter').style.animation = "";},2200);
+                    repeatedseq = [];
+                    writeInfo("This is your "+mistakeCount+" mistake\nBe careful! at 3 you will lose");
+                    if (!showingSeq) {
+                        waitingShow = 1;
+                        setTimeout(showSeq,2700);
+                    }
+                    else{
+                        writeInfo("You made a mistake before the sequence has stoped\nSHAME ON YOU");
+                        waitingShow = 1;
+                        setTimeout(showSeq,4000);
+                        setTimeout(writeMistakeCount,5700);
+                    }
+                } else {
+                    writeInfo("You Lost!\nStart from the beginning");
+                    mistakeCount=0;
+                    seq = [];
+                    repeatedseq = [];
+                    if (!showingSeq)
+                    {
+                        waitingShow = 1;
+                        setTimeout(addNewItemToSeq,3000);
+                    }
+                    else
+                    {
+                        waitingShow = 1;
+                        setTimeout(addNewItemToSeq,7000);
+                    }
+                }
+            } else {
+                if (repeatedseq.length==seq.length) {
+                    writeInfo("Nice Job!\nContinue to the next challange presented now");
+                    mistakeCount=0;
+                    repeatedseq = [];
+                    waitingShow = 1;
+                    setTimeout(addNewItemToSeq,3000);
+                }
+            }
+            
+        });
+    }); 
+    
+    document.querySelector('#newGameButton').addEventListener("click" ,(e) => {
+        interupted=1;
+        mistakeCount=0;
+        seq = [];
+        repeatedseq = [];
+        writeInfo("New game started\nHave Fun");
+        addNewItemToSeq();
+    });
+    document.querySelector('#addMoveButton').addEventListener("click" ,(e) => {
+        addNewItemToSeq();
+    });
+    document.querySelector('#showSeqButton').addEventListener("click" ,(e) => {
+        showSeq();
+    });
+
+
+    function addNewItemToSeq() {
+        mistakeCount=0;
+        let rand = Math.round(Math.random()*4);
+        if (rand==0) 
+            rand=1;
+        seq.push(rand);
+        document.getElementById("statText").innerText="Length: "+seq.length;
+        showSeq();
+    }
+
+    function showSeq() {
+        waitingShow = 0;
+        showingSeq = 1;
+        interupted = 0;
+        showItemInSeq(0);
+    }
+
+    function showItemInSeq(itemnum) {
+        if (interupted)
+            return;
+        if (itemnum==seq.length-1)
+            showingSeq=0;
+        let item = document.getElementById("SimonButton"+seq[itemnum]);
+        item.classList.add("Simon-Buttons-Clicked");
+        setTimeout(() => {
+            item.classList.remove("Simon-Buttons-Clicked");
+            if (itemnum+1<seq.length)
+                setTimeout(() => {showItemInSeq(itemnum+1);},500);
+        },600);
+    }
+
+    function writeMistakeCount() {
+        writeInfo("This is your "+mistakeCount+" mistake\nBe careful! at 3 you will lose");      
+    }
+
+    function writeInfo(info) {
+        document.getElementById("infoText").innerText=info;
+    }
+
+
+</script>
+</body>
+</html>
